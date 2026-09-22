@@ -6,11 +6,13 @@ import {
   mdiCurrencyUsd,
   mdiChartTimelineVariant,
   mdiFileDocument,
+  mdiCalendarStar,
 } from '@mdi/js'
 import api from '@/lib/api.js'
 import SectionMain from '@/components/SectionMain.vue'
 import CardBoxWidget from '@/components/CardBoxWidget.vue'
 import CardBox from '@/components/CardBox.vue'
+import NotificationBar from '@/components/NotificationBar.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.vue'
 
@@ -18,6 +20,7 @@ const today = new Date().toISOString().slice(0, 10)
 const employeeCount = ref(0)
 const presentToday = ref(0)
 const payslips = ref([])
+const upcomingHolidays = ref([])
 
 const fetchEmployeeCount = () => {
   api.get('employees/').then((result) => {
@@ -49,10 +52,17 @@ const fetchPayslips = () => {
   })
 }
 
+const fetchUpcomingHolidays = () => {
+  api.get('holidays/upcoming/').then((result) => {
+    upcomingHolidays.value = result.data
+  })
+}
+
 onMounted(() => {
   fetchEmployeeCount()
   fetchPresentToday()
   fetchPayslips()
+  fetchUpcomingHolidays()
 })
 </script>
 
@@ -60,6 +70,17 @@ onMounted(() => {
   <LayoutAuthenticated>
     <SectionMain>
       <SectionTitleLineWithButton :icon="mdiChartTimelineVariant" title="Payroll Overview" main />
+
+      <NotificationBar
+        v-for="holiday in upcomingHolidays"
+        :key="holiday.id"
+        color="warning"
+        :icon="mdiCalendarStar"
+        class="mb-6"
+      >
+        <b>Holiday reminder:</b> {{ holiday.name }} is tomorrow ({{ holiday.date }}).
+        <span v-if="holiday.description">{{ holiday.description }}</span>
+      </NotificationBar>
 
       <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-4">
         <CardBoxWidget

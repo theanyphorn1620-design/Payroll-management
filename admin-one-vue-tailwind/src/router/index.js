@@ -85,6 +85,16 @@ const routes = [
   },
   {
     meta: {
+      title: 'Holidays',
+      requiresAuth: true,
+      adminOnly: true,
+    },
+    path: '/holidays',
+    name: 'holidays',
+    component: () => import('@/views/HolidaysView.vue'),
+  },
+  {
+    meta: {
       title: 'Check In',
       requiresAuth: true,
     },

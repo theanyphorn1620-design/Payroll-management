@@ -7,6 +7,7 @@ import {
   mdiCurrencyUsd,
   mdiFileDocument,
   mdiChartBar,
+  mdiCalendarStar,
   mdiLogout,
 } from '@mdi/js'
 
@@ -51,6 +52,12 @@ export const menuAsideMain = [
     to: '/reports',
     label: 'Reports',
     icon: mdiChartBar,
+    adminOnly: true,
+  },
+  {
+    to: '/holidays',
+    label: 'Holidays',
+    icon: mdiCalendarStar,
     adminOnly: true,
   },
   {

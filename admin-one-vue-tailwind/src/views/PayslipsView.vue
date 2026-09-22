@@ -28,6 +28,12 @@ const statusOptions = [
   { id: 'paid', label: 'Paid' },
 ]
 
+const paymentMethodOptions = [
+  { id: 'bank_transfer', label: 'Bank Transfer' },
+  { id: 'cash', label: 'Cash' },
+  { id: 'cheque', label: 'Cheque' },
+]
+
 const monthOptions = [
   { id: 1, label: 'January' },
   { id: 2, label: 'February' },
@@ -102,16 +108,28 @@ const submitForm = () => {
 const isStatusModalActive = ref(false)
 const statusModalPayslip = ref(null)
 const statusModalValue = ref(null)
+const statusModalPaymentDate = ref('')
+const statusModalPaymentMethod = ref(null)
 
 const openStatusModal = (payslip) => {
   statusModalPayslip.value = payslip
   statusModalValue.value = statusOptions.find((o) => o.id === payslip.status)
+  statusModalPaymentDate.value = payslip.payment_date || new Date().toISOString().slice(0, 10)
+  statusModalPaymentMethod.value =
+    paymentMethodOptions.find((o) => o.id === payslip.payment_method) || paymentMethodOptions[0]
   isStatusModalActive.value = true
 }
 
 const submitStatus = () => {
   const statusId = statusModalValue.value?.id ?? statusModalValue.value
-  api.patch(`payslips/${statusModalPayslip.value.id}/`, { status: statusId }).then(() => {
+  const payload = { status: statusId }
+
+  if (statusId === 'paid') {
+    payload.payment_date = statusModalPaymentDate.value
+    payload.payment_method = statusModalPaymentMethod.value?.id ?? statusModalPaymentMethod.value
+  }
+
+  api.patch(`payslips/${statusModalPayslip.value.id}/`, payload).then(() => {
     isStatusModalActive.value = false
     fetchPayslips()
   })
@@ -181,6 +199,14 @@ onMounted(() => {
     <FormField label="Status">
       <FormControl v-model="statusModalValue" :options="statusOptions" />
     </FormField>
+    <template v-if="statusModalValue?.id === 'paid'">
+      <FormField label="Payment date">
+        <FormControl v-model="statusModalPaymentDate" type="date" required />
+      </FormField>
+      <FormField label="Payment method">
+        <FormControl v-model="statusModalPaymentMethod" :options="paymentMethodOptions" />
+      </FormField>
+    </template>
   </CardBoxModal>
 
   <CardBoxModal
@@ -222,6 +248,7 @@ onMounted(() => {
               <th>Leave days</th>
               <th>Net pay</th>
               <th>Status</th>
+              <th>Paid On</th>
             </tr>
           </thead>
           <tbody>
@@ -249,9 +276,15 @@ onMounted(() => {
                   <BaseButton color="info" :icon="mdiPencil" small @click="openStatusModal(payslip)" />
                 </BaseButtons>
               </td>
+              <td data-label="Paid On">
+                <span v-if="payslip.payment_date">
+                  {{ payslip.payment_date }} ({{ paymentMethodOptions.find((o) => o.id === payslip.payment_method)?.label }})
+                </span>
+                <span v-else class="text-gray-500 dark:text-slate-400">—</span>
+              </td>
             </tr>
             <tr v-if="!payslips.length">
-              <td colspan="9" class="text-center">No payslips generated yet</td>
+              <td colspan="10" class="text-center">No payslips generated yet</td>
             </tr>
           </tbody>
         </table>

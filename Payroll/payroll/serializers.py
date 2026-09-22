@@ -1,13 +1,19 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from .models import Attendance, Employee, LeavePolicy, Payslip, SalaryStructure
+from .models import Attendance, Employee, Holiday, LeavePolicy, Payslip, SalaryStructure
 
 
 class LeavePolicySerializer(serializers.ModelSerializer):
     class Meta:
         model = LeavePolicy
         fields = ['id', 'free_days_per_month', 'excess_deduction_per_day']
+
+
+class HolidaySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Holiday
+        fields = ['id', 'name', 'date', 'description']
 
 
 class SalaryStructureSerializer(serializers.ModelSerializer):
@@ -48,6 +54,8 @@ class PayslipSerializer(serializers.ModelSerializer):
             'leave_deduction',
             'net_pay',
             'status',
+            'payment_date',
+            'payment_method',
             'generated_at',
         ]
         read_only_fields = [
@@ -80,6 +88,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             'department',
             'position',
             'date_joined',
+            'termination_date',
             'is_active',
             'salary_structure',
             'qr_token',

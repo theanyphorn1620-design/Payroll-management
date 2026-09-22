@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     AttendanceViewSet,
     EmployeeViewSet,
+    HolidayViewSet,
     PayslipViewSet,
     SalaryStructureViewSet,
     leave_policy,
@@ -17,6 +18,7 @@ router.register('employees', EmployeeViewSet, basename='employee')
 router.register('salary-structures', SalaryStructureViewSet)
 router.register('attendances', AttendanceViewSet, basename='attendance')
 router.register('payslips', PayslipViewSet, basename='payslip')
+router.register('holidays', HolidayViewSet, basename='holiday')
 
 urlpatterns = router.urls + [
     path('reports/payroll-summary/', payroll_summary, name='payroll-summary'),

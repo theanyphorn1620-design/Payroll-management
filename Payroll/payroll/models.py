@@ -25,6 +25,7 @@ class Employee(models.Model):
     department = models.CharField(max_length=100, blank=True)
     position = models.CharField(max_length=100, blank=True)
     date_joined = models.DateField()
+    termination_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     qr_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     national_id = models.CharField(max_length=50, blank=True)
@@ -65,6 +66,18 @@ class LeavePolicy(models.Model):
         return f'{self.free_days_per_month} free leave days/month, ${self.excess_deduction_per_day}/extra day'
 
 
+class Holiday(models.Model):
+    name = models.CharField(max_length=100)
+    date = models.DateField(unique=True)
+    description = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        ordering = ['date']
+
+    def __str__(self):
+        return f'{self.name} ({self.date})'
+
+
 class Attendance(models.Model):
     class Status(models.TextChoices):
         PRESENT = 'present', 'Present'
@@ -92,6 +105,11 @@ class Payslip(models.Model):
         APPROVED = 'approved', 'Approved'
         PAID = 'paid', 'Paid'
 
+    class PaymentMethod(models.TextChoices):
+        BANK_TRANSFER = 'bank_transfer', 'Bank Transfer'
+        CASH = 'cash', 'Cash'
+        CHEQUE = 'cheque', 'Cheque'
+
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='payslips')
     month = models.PositiveSmallIntegerField()
     year = models.PositiveSmallIntegerField()
@@ -104,6 +122,10 @@ class Payslip(models.Model):
     leave_deduction = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     net_pay = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.DRAFT)
+    payment_date = models.DateField(null=True, blank=True)
+    payment_method = models.CharField(
+        max_length=20, choices=PaymentMethod.choices, blank=True
+    )
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

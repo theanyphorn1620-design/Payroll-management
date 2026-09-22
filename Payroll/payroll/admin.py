@@ -1,11 +1,17 @@
 from django.contrib import admin
 
-from .models import Attendance, Employee, LeavePolicy, Payslip, SalaryStructure
+from .models import Attendance, Employee, Holiday, LeavePolicy, Payslip, SalaryStructure
 
 
 @admin.register(LeavePolicy)
 class LeavePolicyAdmin(admin.ModelAdmin):
     list_display = ['free_days_per_month', 'excess_deduction_per_day']
+
+
+@admin.register(Holiday)
+class HolidayAdmin(admin.ModelAdmin):
+    list_display = ['name', 'date', 'description']
+    list_filter = ['date']
 
 
 @admin.register(Employee)
@@ -18,6 +24,7 @@ class EmployeeAdmin(admin.ModelAdmin):
         'position',
         'employment_type',
         'is_active',
+        'termination_date',
         'user',
     ]
     list_filter = ['employment_type', 'department', 'is_active']
@@ -37,5 +44,14 @@ class AttendanceAdmin(admin.ModelAdmin):
 
 @admin.register(Payslip)
 class PayslipAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'month', 'year', 'net_pay', 'status', 'generated_at']
-    list_filter = ['status', 'month', 'year']
+    list_display = [
+        'employee',
+        'month',
+        'year',
+        'net_pay',
+        'status',
+        'payment_date',
+        'payment_method',
+        'generated_at',
+    ]
+    list_filter = ['status', 'payment_method', 'month', 'year']

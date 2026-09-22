@@ -1,7 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import QRCode from 'qrcode'
-import { mdiAccountCircle, mdiCalendarCheck, mdiFileDocument, mdiQrcode } from '@mdi/js'
+import {
+  mdiAccountCircle,
+  mdiCalendarCheck,
+  mdiFileDocument,
+  mdiQrcode,
+  mdiCalendarStar,
+} from '@mdi/js'
 import api from '@/lib/api.js'
 import { useAuthStore } from '@/stores/auth.js'
 import SectionMain from '@/components/SectionMain.vue'
@@ -9,6 +15,7 @@ import SectionTitleLineWithButton from '@/components/SectionTitleLineWithButton.
 import CardBox from '@/components/CardBox.vue'
 import PillTag from '@/components/PillTag.vue'
 import BaseIcon from '@/components/BaseIcon.vue'
+import NotificationBar from '@/components/NotificationBar.vue'
 import LayoutAuthenticated from '@/layouts/LayoutAuthenticated.vue'
 
 const authStore = useAuthStore()
@@ -17,6 +24,7 @@ const employee = authStore.employee
 const attendances = ref([])
 const payslips = ref([])
 const qrDataUrl = ref('')
+const upcomingHolidays = ref([])
 
 const statusPillColor = {
   present: 'success',
@@ -43,9 +51,16 @@ const fetchPayslips = () => {
   })
 }
 
+const fetchUpcomingHolidays = () => {
+  api.get('holidays/upcoming/').then((result) => {
+    upcomingHolidays.value = result.data
+  })
+}
+
 onMounted(() => {
   fetchAttendances()
   fetchPayslips()
+  fetchUpcomingHolidays()
 
   if (employee?.qr_token) {
     const checkInUrl = `${window.location.origin}${import.meta.env.BASE_URL}#/check-in/${employee.qr_token}`
@@ -60,6 +75,17 @@ onMounted(() => {
   <LayoutAuthenticated>
     <SectionMain>
       <SectionTitleLineWithButton :icon="mdiAccountCircle" title="My Portal" main />
+
+      <NotificationBar
+        v-for="holiday in upcomingHolidays"
+        :key="holiday.id"
+        color="warning"
+        :icon="mdiCalendarStar"
+        class="mb-6"
+      >
+        <b>Holiday reminder:</b> {{ holiday.name }} is tomorrow ({{ holiday.date }}).
+        <span v-if="holiday.description">{{ holiday.description }}</span>
+      </NotificationBar>
 
       <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <CardBox class="lg:col-span-2">

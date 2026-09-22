@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Sum
@@ -8,10 +10,11 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
-from .models import Attendance, Employee, LeavePolicy, Payslip, SalaryStructure
+from .models import Attendance, Employee, Holiday, LeavePolicy, Payslip, SalaryStructure
 from .serializers import (
     AttendanceSerializer,
     EmployeeSerializer,
+    HolidaySerializer,
     LeavePolicySerializer,
     PayslipSerializer,
     SalaryStructureSerializer,
@@ -74,6 +77,18 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         if user.is_staff:
             return Employee.objects.all()
         return Employee.objects.filter(user=user)
+
+
+class HolidayViewSet(viewsets.ModelViewSet):
+    serializer_class = HolidaySerializer
+    permission_classes = [IsStaffOrReadOnly]
+    queryset = Holiday.objects.all()
+
+    @action(detail=False, methods=['get'])
+    def upcoming(self, request):
+        tomorrow = timezone.localdate() + datetime.timedelta(days=1)
+        holidays = Holiday.objects.filter(date=tomorrow)
+        return Response(HolidaySerializer(holidays, many=True).data)
 
 
 class SalaryStructureViewSet(viewsets.ModelViewSet):

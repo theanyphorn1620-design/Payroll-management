@@ -33,6 +33,7 @@ const emptyForm = () => ({
   department: '',
   position: '',
   date_joined: '',
+  termination_date: '',
   is_active: true,
   national_id: '',
   bank_account_number: '',
@@ -71,6 +72,10 @@ const submitForm = () => {
   const payload = { ...form.value }
   delete payload.salary_structure
   payload.employment_type = form.value.employment_type?.id ?? form.value.employment_type
+  payload.termination_date = payload.termination_date || null
+  if (payload.termination_date) {
+    payload.is_active = false
+  }
 
   const request = payload.id
     ? api.put(`employees/${payload.id}/`, payload)
@@ -156,6 +161,9 @@ onMounted(fetchEmployees)
     </FormField>
     <FormField label="Date joined">
       <FormControl v-model="form.date_joined" type="date" required />
+    </FormField>
+    <FormField label="Termination date" help="Leave blank while employed. Setting this marks the employee inactive.">
+      <FormControl v-model="form.termination_date" type="date" />
     </FormField>
     <FormField label="Employment type">
       <FormControl v-model="form.employment_type" :options="employmentTypeOptions" />
